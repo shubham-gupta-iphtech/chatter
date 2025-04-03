@@ -13,9 +13,7 @@ router.post("/register",validateSignup,async (req,res)=>
 {
    try {
      const {name, email, password} = req.body;
-
-
-     
+    
      //check for whether user already exists or not
      const user = await User.findOne({email});
  
