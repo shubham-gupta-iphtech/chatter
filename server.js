@@ -40,8 +40,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'front.html'));
 });
 
+let currentUser = "";
+
 app.get('/api/messages/:partner', authMiddleware, async (req, res) => {
-  const currentUser = req.user.name;
+  currentUser = req.user.name;
   const partner = req.params.partner;
   console.log("api ki information -----> ", currentUser, partner);
   try {
@@ -57,6 +59,27 @@ app.get('/api/messages/:partner', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch chat history' });
   }
 });
+
+
+
+app.delete('/api/messages/clear/:partner',authMiddleware, async (req, res) => {
+  currentUser = req.user.name; // Or however you store it after auth
+  const partner = req.params.partner;
+
+  try {
+    await Message.deleteMany({
+      $or: [
+        { from: currentUser, to: partner },
+        { from: partner, to: currentUser }
+      ]
+    });
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Error clearing chat:', err);
+    res.sendStatus(500);
+  }
+});
+
 
 
 app.use(express.static('public'));

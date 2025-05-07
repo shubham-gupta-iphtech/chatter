@@ -446,7 +446,7 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-
+        let currentChatPartner = "";
         async function loadChatHistory(withUser) {
             try {
                 const res = await fetch(`http://localhost:3000/api/messages/${withUser}`, {
@@ -455,9 +455,9 @@
                         "Content-Type": "application/json"
                     }
                 });
-
+                currentChatPartner = withUser;
                 const data = await res.json();
-
+                
                 const messagesContainer = document.getElementById('messages');
                 messagesContainer.innerHTML = ""; // Clear current messages
                 let lastDate = null;
@@ -485,6 +485,33 @@
                 console.error("Error loading chat history:", err);
             }
         }
+
+
+        document.getElementById('clearChatBtn').addEventListener('click', async () => {
+            if (!currentChatPartner) return alert("Select a user to clear chat with");
+
+            const confirmed = confirm(`Clear chat with ${currentChatPartner}?`);
+            if (!confirmed) return;
+
+            try {
+                const res = await fetch(`/api/messages/clear/${currentChatPartner}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': tokenizer // if you're using auth
+                    }
+                });
+
+                if (res.ok) {
+                    document.getElementById('messages').innerHTML = '';
+                } else {
+                    alert('Failed to clear chat.');
+                }
+            } catch (err) {
+                console.error('Error clearing chat:', err);
+            }
+        });
+
 
 
     </script>
