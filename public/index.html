@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Private Chat App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: roboto;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        #messages {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+        }
+
+        #messages li {
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .from-me {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+
+        .from-them {
+            background-color: #f8d7da;
+            align-self: flex-start;
+        }
+
+        #form-container {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #fff;
+            border-top: 1px solid #ccc;
+        }
+
+        #form-container input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #form-container button {
+            padding: 0.5rem 1rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #register-section {
+            padding: 1rem;
+            background: #fff;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #register-section input {
+            padding: 0.5rem;
+            margin-right: 0.5rem;
+        }
+
+        #sidebar {
+            width: 250px;
+            height: 400px;
+            background: #e7ffcd;
+            padding: 1rem;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            border-bottom-left-radius: 15px;
+        }
+
+        #sidebar h3 {
+            font-size: 18px;
+            margin-bottom: 1rem;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        #online-users {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #online-users li {
+            padding: 0.5rem;
+            background: #f1f1f1;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: bold;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="navbar"
+        style="display: flex; justify-content: space-between; align-items: center; background: #2c2c2c; color: white; padding: 10px;">
+        <div id="user-info">
+            <!-- Username and email will go here -->
+        </div>
+        <div>
+            🔒 <strong>Private Chat App</strong>
+        </div>
+    </div>
+
+    <!-- <div id="register-section">
+        <input id="usernameInput" placeholder="Your username" />
+        <button onclick="register()">Register</button>
+    </div> -->
+
+
+    <div id="sidebar">
+        <h3>Online Users</h3>
+        <ul id="online-users">
+            <!-- List of online users will be populated here -->
+        </ul>
+    </div>
+
+
+    <div id="chat-container">
+        <ul id="messages"></ul>
+    </div>
+
+    <div id="form-container">
+        <input id="toInput" placeholder="Recipient username" />
+        <input id="messageInput" placeholder="Type a message..." />
+        <button onclick="sendPrivateMessage()">Send</button>
+        <button id="clearChatBtn"
+            style="margin-left: auto; background-color: red; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+            Clear Chat
+        </button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const tokenizer = localStorage.getItem("accessToken");
+        console.log("ye dekho na  token", tokenizer);
+        if (!tokenizer) {
+            alert("No token found. Please login.");
+
+        }
+
+        const socket = io("http://localhost:3000", {
+            auth: {
+                token: tokenizer
+            }
+        });
+
+        socket.on('online users', (users) => {
+            updateOnlineUsersList(users);
+        });
+
+
+        function updateOnlineUsersList(users) {
+            const onlineUsersList = document.getElementById('online-users');
+            onlineUsersList.innerHTML = ''; // Clear current list
+
+            users.forEach(user => {
+                if (user === userData.user.name) return; // Skip yourself
+                const li = document.createElement('li');
+
+                li.innerHTML = `
+    <div style="display: flex; align-items: center;">
+        <span style="
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: green;
+            border-radius: 50%;
+            margin-right: 8px;
+        "></span>
+        <span>${user}</span>
+    </div>
+`;
+
+                li.style.cursor = 'pointer';
+                li.style.padding = '0.5rem';
+                li.style.border = '1px solid #ccc';
+                li.style.marginBottom = '0.5rem';
+                li.style.borderRadius = '8px';
+                li.style.backgroundColor = '#f9f9f9';
+
+                li.addEventListener('click', () => {
+                    document.getElementById('toInput').value = user;
+
+                    console.log("dekho maine click kia");
+                    loadChatHistory(user);
+                });
+
+                // li.onclick = () => {
+                //     currentChatPartner = user;
+                //     console.log("dekho maine click kia");
+                //     loadChatHistory(user); // This function should fetch messages from the backend
+                // };
+
+                onlineUsersList.appendChild(li);
+            });
+        }
+
+        // function updateOnlineUsersList(users) {
+        //     const onlineUsersList = document.getElementById('online-users');
+        //     onlineUsersList.innerHTML = ''; // Clear current list
+
+        //     users.forEach(user => {
+        //         const li = document.createElement('li');
+
+        //         li.innerHTML =
+        //             <div style="display: flex; align-items: center;">
+        //                 <span style="
+        //           display: inline-block;
+        //           width: 8px;
+        //           height: 8px;
+        //           background-color: green;
+        //           border-radius: 50%;
+        //           margin-right: 8px;
+        //           "></span>
+        //                 <span>${user}</span>
+        //             </div>
+        //             ;
+
+        //         li.style.cursor = 'pointer';
+        //         li.style.padding = '0.5rem';
+        //         li.style.border = '1px solid #ccc';
+        //         li.style.marginBottom = '0.5rem';
+        //         li.style.borderRadius = '8px';
+        //         li.style.backgroundColor = '#f9f9f9';
+        //         li.addEventListener('click', () => {
+        //             document.getElementById('toInput').value = user;
+        //         });
+        //         onlineUsersList.appendChild(li);
+        //     });
+        // }
+
+        // fetch("http://localhost:3000/api/profile", {
+        //     method: "GET",
+        //     headers: {
+        //         "Authorization": tokenizer,
+        //         "Content-Type": "application/json"
+        //     }
+        // })
+        //     .then(res => res.json())
+        //     .then(data => console.log(data))
+        //     .catch(err => console.error(err));
+
+        // // Example: after successful registration or login
+
+
+        // document.getElementById("user-info").innerHTML = 
+        //     <strong>${data.name}</strong> <span style="font-size: 0.9em; opacity: 0.7;">(${data.email})</span>
+        //     ;
+
+
+
+        // fetch("http://localhost:3000/api/profile", {
+        //     method: "GET",
+        //     headers: {
+        //         "Authorization": tokenizer, // This should be your valid JWT
+        //         "Content-Type": "application/json"
+        //     }
+        // })
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         console.log("kya hai bey", data); // Check if data.user exists
+        //         userData = data;
+        //         if (data.user) {
+        //             const userInfoDiv = document.getElementById("user-info"); // e.g. navbar
+        //             userInfoDiv.innerHTML = 
+        //     <strong>${data.user.name}</strong> 
+        //     <small style="opacity: 0.7;">(${data.user.email})</small>
+        //        ;
+        //         socket.emit('register', data.user.name);
+
+        //         } else {
+        //             console.error("User data missing:", data);
+        //         }
+        //     })
+        //     .catch(err => console.error("Fetch error:", err));
+
+        //converting to async await code 
+        let userData = null;
+
+        async function fetchUserData() {
+            try {
+                const res = await fetch("http://localhost:3000/api/profile", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": tokenizer, // This should be your valid JWT
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                const data = await res.json();
+                console.log("kya hai", data); // Check if data.user exists
+                userData = data;
+                if (data.user) {
+                    const userInfoDiv = document.getElementById("user-info"); // e.g. navbar
+                    userInfoDiv.innerHTML = `
+                <strong>${data.user.name}</strong> 
+                <small style="opacity: 0.7;">(${data.user.email})</small>
+            `;
+                    socket.emit('register', data.user.name);
+                } else {
+                    console.error("User data missing:", data);
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+            }
+        }
+
+        fetchUserData();
+
+
+
+
+        // function register() {
+        //     let username = '';
+
+        //     let input = document.getElementById('usernameInput');
+        //     username = input.value.trim();
+        //     if (!username) return alert('Please enter a username');
+        //     console.log("hellooooooollllooooo", userData);
+
+        //     document.getElementById('register-section').style.display = 'none';
+        // }
+
+        function sendPrivateMessage() {
+            const to = document.getElementById('toInput').value.trim();
+            const message = document.getElementById('messageInput').value.trim();
+
+            console.log("sender and receiver info :::::::::::::::::::::::::::::");
+            console.log(to);
+            console.log(message);
+
+            if (!to || !message) return;
+            socket.emit('private message', { to, message, from: userData.user.name });
+
+            appendMessage({ message, from: userData.user.name, createdAt: new Date().toISOString() }, true);
+            //appendMessage(message, true); 
+            // Add to sender's chat view                                                                                                                                                                                                                                                                                                                                                                                                                  
+            document.getElementById('messageInput').value = '';
+        }
+
+        // socket.on('private message', ({ message, from }) => {
+        //     appendMessage(`From ${from}: ${message}`, false);
+
+        // });
+        socket.on('private message', ({ from, message, createdAt }) => {
+            const isMine = from === userData.user.name;
+            appendMessage({ message, from, createdAt }, isMine);
+        });
+
+
+        socket.on('connect_error', (err) => {
+            console.error('Connection failed:', err.message);  // This will now show the error
+        });
+
+        // yeh kaam krta hai
+        // function appendMessage(text, isMine) {
+        //     const messages = document.getElementById('messages');
+        //     const li = document.createElement('li');
+        //     li.textContent = text;
+        //     li.className = isMine ? 'from-me' : 'from-them';
+        //     messages.appendChild(li);
+        //     messages.scrollTop = messages.scrollHeight;
+        // }
+
+        function appendMessage({ message, from, createdAt }, isMine) {
+            const messages = document.getElementById('messages');
+            const li = document.createElement('li');
+
+            const nameSpan = document.createElement('strong');
+            nameSpan.textContent = isMine ? 'You' : from;
+            nameSpan.style.display = 'block';
+
+            // const date = new Date(msg.createdAt);
+            // const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+
+            const date = new Date(createdAt);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeSpan = document.createElement('small');
+            timeSpan.textContent = formattedTime;
+            timeSpan.style.display = 'block';
+            timeSpan.style.opacity = '0.6';
+
+            const msgText = document.createElement('span');
+            msgText.textContent = message;
+
+            li.appendChild(nameSpan);
+            li.appendChild(msgText);
+            li.appendChild(timeSpan);
+
+            li.className = isMine ? 'from-me' : 'from-them';
+
+            messages.appendChild(li);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+
+        async function loadChatHistory(withUser) {
+            try {
+                const res = await fetch(`http://localhost:3000/api/messages/${withUser}`, {
+                    headers: {
+                        "Authorization": tokenizer,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                const data = await res.json();
+
+                const messagesContainer = document.getElementById('messages');
+                messagesContainer.innerHTML = ""; // Clear current messages
+                let lastDate = null;
+                data.forEach(msg => {
+
+                    const messageDate = new Date(msg.createdAt);
+                    const dateString = messageDate.toLocaleDateString();
+
+                    // Insert date divider if the date has changed
+                    if (lastDate !== dateString) {
+                        const divider = document.createElement('li');
+                        divider.textContent = dateString;
+                        divider.className = 'date-divider';
+                        messagesContainer.appendChild(divider);
+                        lastDate = dateString;
+                    }
+
+
+                    const isMine = msg.from === userData.user.name;
+                    appendMessage(msg, isMine);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // auto-scroll
+            } catch (err) {
+                console.error("Error loading chat history:", err);
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>

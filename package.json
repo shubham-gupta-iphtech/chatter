@@ -1,8 +1,7 @@
 {
   "name": "10_march_demo_project-",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "main": "server.js",
   "scripts": {
     "dev": "nodemon index.js"
   },
@@ -22,6 +21,6 @@
     "json": "^11.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.10"
   }
 }
