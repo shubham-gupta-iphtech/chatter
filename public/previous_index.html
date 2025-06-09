@@ -138,8 +138,8 @@
         }
 
         .logout-btn {
-            /* float: right; */
-            background-color: #050404;
+            float: right;
+            background-color: #e53935;
             /* red */
             color: white;
             border: none;
@@ -148,43 +148,10 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: -5px;
-            width: 100px;
-            margin-left: 29px;
-
         }
 
         .logout-btn:hover {
             background-color: #c62828;
-        }
-
-
-        .navbar {
-            background-color: #262626;
-            padding: 10px 20px;
-        }
-
-        .navbar ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-
-        .navbar li {
-            margin-right: 20px;
-        }
-
-
-
-        .navbar {
-            color: white;
-            text-decoration: none;
-
-        }
-
-
-        .navbar a:hover {
-            text-decoration: underline;
         }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -192,56 +159,51 @@
 
 <body>
 
-    <nav class="navbar">
-        <ul>
-            <li>
-                <div id="user-info">
-                    <!-- Username and email will go here -->
-                </div>
-            </li>
+    <div id="navbar"
+        style="display: flex; justify-content: space-between; align-items: center; background: #2c2c2c; color: white; padding: 10px;">
+        <div id="user-info">
+            <!-- Username and email will go here -->
+        </div>
 
+        <button id="logoutBtn" class="logout-btn">Logout</button>
 
-            <li>
-                <div id="notification-container" style="position: absolute; cursor: pointer; display: block;">
-                    <i data-lucide="bell"></i>
-                    <span id="notification-count" style="
-                    position: absolute;
-                    top: -5px;
-                    right: -5px;
-                     background: red;
-                     color: white;
-                     border-radius: 50%;
-                     padding: 2px 4px;
-                     font-size: 0.75rem;
-                     display: none;
-                    ">0</span>
+        <!-- Add this inside your navbar -->
+        <div id="notification-container" style="position: relative; cursor: pointer;">
+            <i data-lucide="bell"></i>
+            <span id="notification-count" style="
+          position: absolute;
+          top: -5px;
+          right: -5px;
+           background: red;
+           color: white;
+           border-radius: 50%;
+           padding: 2px 4px;
+           font-size: 0.75rem;
+           display: none;
+          ">0</span>
 
-                    <ul id="notification-list" style="
-                        display: none;
-                        position: absolute;
-                        top: 25px;
-                        right: 0;
-                        background: white;
-                        border: 1px solid #ccc;
-                        color: black;
-                        list-style: none;
-                        padding: 10px;
-                        width: 200px;
-                        /* box-shadow: 0 2px 8px rgba(0,0,0,0.15); */
-                        border-radius: 10px;
-                        z-index: 999;
-                    "></ul>
-            </li>
-            <li>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
-            </li>
+            <!-- Dropdown for notification messages -->
+            <ul id="notification-list" style="
+            display: none;
+            position: absolute;
+            top: 25px;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            color: black;
+            list-style: none;
+            padding: 10px;
+            width: 200px;
+            /* box-shadow: 0 2px 8px rgba(0,0,0,0.15); */
+            border-radius: 10px;
+            z-index: 999;
+           "></ul>
+        </div>
 
-        </ul>
-    </nav>
-
-
-
-
+        <div>
+            🔒 <strong>Private Chat App</strong>
+        </div>
+    </div>
 
     <!-- <div id="register-section">
         <input id="usernameInput" placeholder="Your username" />
@@ -252,7 +214,7 @@
     <div id="sidebar">
         <h3>Online Users</h3>
         <ul id="online-users">
-
+            <!-- List of online users will be populated here -->
         </ul>
     </div>
 
@@ -506,10 +468,6 @@
         });
 
         let notificationCount = 0;
-        const list = document.getElementById('notification-list');
-        const abc = document.createElement('li');
-        abc.textContent = "";
-        list.appendChild(abc);
 
         socket.on('chat cleared', ({ from }) => {
             if (currentChatPartner === from) {
@@ -520,7 +478,7 @@
                 const li = document.createElement('li');
                 li.textContent = `Chat with ${from} was cleared.`;
                 list.appendChild(li);
-                abc.textContent = "";
+
                 // Update counter
                 notificationCount++;
                 const badge = document.getElementById('notification-count');
@@ -536,10 +494,6 @@
 
             // Reset count
             notificationCount = 0;
-            if (notificationCount == 0) {
-                // const show = document.getElementById(abc);
-                abc.textContent = `No notifications to show.`;
-            }
             const badge = document.getElementById('notification-count');
             badge.textContent = '0';
             badge.style.display = 'none';

@@ -62,30 +62,12 @@ app.get('/api/messages/:partner', authMiddleware, async (req, res) => {
 
 
 
-app.delete('/api/messages/clear/:partner',authMiddleware, async (req, res) => {
-  currentUser = req.user.name; // Or however you store it after auth
-  const partner = req.params.partner;
-
-  try {
-    await Message.deleteMany({
-      $or: [
-        { from: currentUser, to: partner },
-        { from: partner, to: currentUser }
-      ]
-    });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error('Error clearing chat:', err);
-    res.sendStatus(500);
-  }
-});
-
 
 
 app.use(express.static('public'));
 
 // username -> socketId map
-const users = {};
+let users = [];
 
 app.use(express.json());
 app.use(cookieParser());
@@ -131,6 +113,11 @@ io.on('connection', (socket) => {
     }
 
     const targetSocketId = users[to];
+    console.log("users k baare me jaanna hai kya ?");
+    console.log(users);
+    console.log(users[to]);
+
+
     if (targetSocketId) {
       io.to(targetSocketId).emit('private message', {
         from,
@@ -140,7 +127,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  app.delete('/api/messages/clear/:partner', authMiddleware, async (req, res) => {
+    currentUser = req.user.name; // Or however you store it after auth
+    const partner = req.params.partner;
+    const partnerSocketId = users[partner];
+    try {
+      await Message.deleteMany({
+        $or: [
+          { from: currentUser, to: partner },
+          { from: partner, to: currentUser }
+        ]
+      });
 
+
+      if (partnerSocketId) {
+        io.to(partnerSocketId).emit('chat cleared', { from: currentUser });
+      }
+
+      res.sendStatus(200);
+    } catch (err) {
+      console.error('Error clearing chat:', err);
+      res.sendStatus(500);
+    }
+  });
 
   // Cleanup on disconnect
   socket.on('disconnect', () => {

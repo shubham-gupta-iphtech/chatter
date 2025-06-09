@@ -139,7 +139,7 @@
 
         .logout-btn {
             /* float: right; */
-            background-color: #050404;
+            background-color: #e53935;
             /* red */
             color: white;
             border: none;
@@ -149,7 +149,6 @@
             cursor: pointer;
             margin-top: -5px;
             width: 100px;
-            margin-left: 29px;
 
         }
 
@@ -172,16 +171,16 @@
 
         .navbar li {
             margin-right: 20px;
-        }
-
-
-
-        .navbar {
             color: white;
             text-decoration: none;
-
+            font-weight: bold;
         }
 
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
         .navbar a:hover {
             text-decoration: underline;
@@ -202,7 +201,7 @@
 
 
             <li>
-                <div id="notification-container" style="position: absolute; cursor: pointer; display: block;">
+                <div id="notification-container" style="cursor: pointer;">
                     <i data-lucide="bell"></i>
                     <span id="notification-count" style="
                     position: absolute;
@@ -506,10 +505,6 @@
         });
 
         let notificationCount = 0;
-        const list = document.getElementById('notification-list');
-        const abc = document.createElement('li');
-        abc.textContent = "";
-        list.appendChild(abc);
 
         socket.on('chat cleared', ({ from }) => {
             if (currentChatPartner === from) {
@@ -520,7 +515,7 @@
                 const li = document.createElement('li');
                 li.textContent = `Chat with ${from} was cleared.`;
                 list.appendChild(li);
-                abc.textContent = "";
+
                 // Update counter
                 notificationCount++;
                 const badge = document.getElementById('notification-count');
@@ -536,10 +531,6 @@
 
             // Reset count
             notificationCount = 0;
-            if (notificationCount == 0) {
-                // const show = document.getElementById(abc);
-                abc.textContent = `No notifications to show.`;
-            }
             const badge = document.getElementById('notification-count');
             badge.textContent = '0';
             badge.style.display = 'none';

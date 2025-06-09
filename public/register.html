@@ -81,11 +81,11 @@
         }
 
 
-        .error {
-            color: #ff5252;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            display: none;
+        .message {
+            text-align: center;
+            margin-top: 1rem;
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -96,20 +96,23 @@
     </div>
 
     <div class="form-container">
-        <h2>Login</h2>
+        <h2>Sign Up</h2>
         <form id="registerForm">
-
+            <div class="form-group">
+                <label for="username">Name</label>
+                <input type="text" id="username" name="username" required />
+            </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="username" placeholder="Enter username" />
+                <input type="email" id="email" name="email" required />
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter password" />
+                <input type="password" id="password" name="password" required />
             </div>
-            <button id="loginBtn" class="submit-btn">Login</button>
-            <div class="error" id="errorMsg">Please fill in both fields.</div>
-            <h4>Don't have an account? <a href="register.html" style="text-decoration: none; color: black;"> Login </a>
+            <button type="submit" class="submit-btn">Register</button>
+            <div class="message" id="message"></div>
+            <h4>Already have an account? <a href="front.html" style="text-decoration: none; color: black;"> Login </a>
             </h4>
         </form>
     </div>
@@ -117,49 +120,35 @@
     <script>
         const form = document.getElementById('registerForm');
         const message = document.getElementById('message');
-        const usernameInput = document.getElementById("username");
-        const passwordInput = document.getElementById("password");
-        const loginBtn = document.getElementById("loginBtn");
-        const email = username;
-        const errorMsg = document.getElementById("errorMsg");
-        loginBtn.addEventListener("click", (event) => {
 
-            event.preventDefault();
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-            const email = username;
-            if (!username || !password) {
-                errorMsg.style.display = "block";
-            } else {
-                errorMsg.style.display = "none";
-                console.log("Sending login data:", email, password);
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-                fetch("http://localhost:3000/api/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ email, password })
-                })
-                    .then(response => response.json())
-                    .then(data => {
+            const userData = {
+                name: form.username.value,
+                email: form.email.value,
+                password: form.password.value
+            };
 
+            try {
+                // Replace with your actual registration endpoint
+                const res = await fetch("http://localhost:3000/api/register", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
 
-                        if (data.accessToken) {
-                            localStorage.setItem("accessToken", data.accessToken); // store JWT
-                            window.location.href = "index.html"; // redirect to homepage
-                        }
-                        if (data.errors) {
-                            errorMsg.textContent = data.errors.map(e => e.msg).join(', ');
-                            errorMsg.style.display = "block";
-                        }
+                const data = await res.json();
 
-                    })
-                    .catch(err => {
-                        console.error("Login error:", err);
-                        errorMsg.textContent = "An error occurred. Try again.";
-                        errorMsg.style.display = "block";
-                    });
+                if (res.ok) {
+                    message.style.color = 'green';
+                    message.textContent = 'Registration successful!';
+                    form.reset();
+                } else {
+                    message.textContent = data.message || 'Registration failed.';
+                }
+            } catch (err) {
+                message.textContent = 'Server error.';
             }
         });
     </script>
