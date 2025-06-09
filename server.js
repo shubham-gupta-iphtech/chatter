@@ -163,6 +163,24 @@ io.on('connection', (socket) => {
     delete onlineUsers[socket.id];
     io.emit('online users', Object.values(onlineUsers));
   });
+
+  socket.on('message:read', async ({ from, to }) => {
+    const readTime = new Date();
+    const sender = from;
+    const receiver = to;
+    // Update DB: all unread messages from 'from' to 'to' are marked read
+    await Message.updateMany(
+      { from: sender, to: receiver, read: false },
+      { $set: { read: true, readAt: readTime } }
+    );
+
+    // Emit read acknowledgment to the sender
+    let senderSocket = partnerSocketId; // Your user/socket mapping
+    if (senderSocket) {
+      io.to(senderSocket).emit('message:read:ack', { by: to, readAt: readTime });
+    }
+  });
+
 });
 app.use("/api", router);
 
